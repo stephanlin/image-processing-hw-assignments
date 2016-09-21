@@ -96,9 +96,9 @@ Clip::applyFilter(ImagePtr I1, ImagePtr I2)
 	int thr1 = m_slider[0]->value();
 	int thr2 = m_slider[1]->value();
 
-        // apply filter
-        clip(I1, thr1, thr2, I2);
-
+    // apply filter
+    clip(I1, thr1, thr2, I2);
+    qDebug() << thr1;
 	return 1;
 }
 
