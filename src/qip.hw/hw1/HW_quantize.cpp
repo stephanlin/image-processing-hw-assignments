@@ -25,8 +25,29 @@ HW_quantize(ImagePtr I1, int levels, bool dither, ImagePtr I2)
 	// evaluate output: each input pixel indexes into lut[] to eval output
 	int type;
 	ChannelPtr<uchar> p1, p2, endd;
-	for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-		IP_getChannel(I2, ch, p2, type);
-		for(endd = p1 + total; p1<endd;) *p2++ = lut[*p1++];
-	}
+	// for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+	// 	IP_getChannel(I2, ch, p2, type);
+	// 	for(endd = p1 + total; p1<endd;) *p2++ = lut[*p1++];
+	// }
+
+    if (!dither){ // if dither checkbox is unchecked
+        for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+            IP_getChannel(I2, ch, p2, type);
+            for(endd = p1 + total; p1<endd;) *p2++ = lut[*p1++];
+        }
+    } else {
+        int pixelPoint = 0;
+        int k;
+        for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+            IP_getChannel(I2, ch, p2, type);
+            for(endd = p1 + total; p1<endd; p1++, pixelPoint++) {
+                int r = rand()%(scale+scale+1)-scale; // generate a random number between scale and -scale
+                if (pixelPoint % 2 == 0)
+                    k = CLIP(*p1 + r, 0, 255);
+                else
+                    k = CLIP(*p1 - r, 0, 255);
+                *p2++ = lut[k];
+            }
+        }
+    }
 }
