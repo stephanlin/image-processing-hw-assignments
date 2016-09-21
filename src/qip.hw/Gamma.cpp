@@ -88,8 +88,8 @@ Gamma::applyFilter(ImagePtr I1, ImagePtr I2)
 	// error checking
 	if(gamma < 0.1 || gamma > 10.0) return 0;
 
-        // apply gamma correction
-        gammaCorrect(I1, gamma, I2);
+    // apply gamma correction
+    gammaCorrect(I1, gamma, I2);
 
 	return 1;
 }
