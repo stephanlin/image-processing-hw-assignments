@@ -108,10 +108,11 @@ Contrast::applyFilter(ImagePtr I1, ImagePtr I2)
 	// convert contrast from [-100,100] slider range to [0,5] range
 	if(c >=0)
 		c = c/25.  + 1.0;	// slope: 1 to 5
-	else	c = 1 + (c/133.);	// slope: .25 to 1
+	else
+        c = 1 + (c/133.);	// slope: .25 to 1
 
-        // apply filter
-        contrast(I1, b, c, I2);
+    // apply filter
+    contrast(I1, b, c, I2);
 
 	return 1;
 }
