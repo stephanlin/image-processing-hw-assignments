@@ -41,11 +41,11 @@ HW_quantize(ImagePtr I1, int levels, bool dither, ImagePtr I2)
         for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
             IP_getChannel(I2, ch, p2, type);
             for(endd = p1 + total; p1<endd; p1++, pixelPoint++) {
-                int r = rand()%(scale+scale+1)-scale; // generate a random number between scale and -scale
-                if (pixelPoint % 2 == 0)
-                    k = CLIP(*p1 + r, 0, 255);
+                int noise = (double)rand() / RAND_MAX * bias;
+                if (pixelPoint % 2)
+                    k = CLIP(*p1 - noise, 0, 255);
                 else
-                    k = CLIP(*p1 - r, 0, 255);
+                    k = CLIP(*p1 + noise, 0, 255);
                 *p2++ = lut[k];
             }
         }
