@@ -18,25 +18,25 @@ HW_histoMatch(ImagePtr I1, ImagePtr Ilut, ImagePtr I2)
     ChannelPtr<int> lut;
 
     IP_getChannel(Ilut, 0, lut, type);
-    for(int i=0; i<MXGRAY; i++) {
+    for(int i=0; i<MXGRAY; i++)
         Havg += lut[i];
-    }
+
     scale = (double) total / Havg;
     if(scale != 1.0) {
         for(i = 0; i < MXGRAY; i++) {
-            if(i%2) {
+            if(i%2)
                 lut[i] = floor(lut[i]*scale);
-            } else {
+            else 
                 lut[i] = ceil(lut[i]*scale);
-            }
         }
     }
 
     int left[MXGRAY], right[MXGRAY], histo[MXGRAY], lim[MXGRAY], index[MXGRAY];
     int p, R = 0, Hsum = 0;
 
+    // reset histograms
     for(i=0; i<MXGRAY; i++) {
-        histo[i] = 0; /* clear histogram */
+        histo[i] = 0;
         lim[i] = 0;
         index[i] = 0;
     }
@@ -47,22 +47,20 @@ HW_histoMatch(ImagePtr I1, ImagePtr Ilut, ImagePtr I2)
             histo[*p1]++;
 
     for(i=0; i<MXGRAY; i++) {
-        left[i] = R; /* left end of interval */
+        left[i] = R; // left end of interval
         lim[i] = lut[R] - Hsum;
         Hsum += histo[i];
         while(Hsum > lut[R] && R < MXGRAY - 1) {
             Hsum -= lut[R];
             R++;
         }
-        if(left[i] != R) {
+        if(left[i] != R)
             index[i] = left[i];
-        }
         right[i] = R;
     }
 
     for(i=0; i<MXGRAY; i++) histo[i] = 0;
 
-    /* visit all input pixels */
     for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
         IP_getChannel(I2, ch, p2, type);
         for(endd = p1 + total; p1<endd; p1++, p2++) {
