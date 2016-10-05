@@ -18,16 +18,13 @@ HW_histoMatch(ImagePtr I1, ImagePtr Ilut, ImagePtr I2)
     ChannelPtr<int> lut;
 
     IP_getChannel(Ilut, 0, lut, type);
-    for(int i=0; i<MXGRAY; i++)
-        Havg += lut[i];
+    for(int i=0; i<MXGRAY; i++) { Havg += lut[i]; }
 
     scale = (double) total / Havg;
     if(scale != 1.0) {
         for(i = 0; i < MXGRAY; i++) {
-            if(i%2)
-                lut[i] = floor(lut[i]*scale);
-            else 
-                lut[i] = ceil(lut[i]*scale);
+            if(i%2) { lut[i] = floor(lut[i]*scale); }
+            else    { lut[i] =  ceil(lut[i]*scale); }
         }
     }
 
@@ -42,9 +39,9 @@ HW_histoMatch(ImagePtr I1, ImagePtr Ilut, ImagePtr I2)
     }
 
     ChannelPtr<uchar> p1, p2, endd;
-    for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++)
-        for(endd = p1 + total; p1<endd; p1++)
-            histo[*p1]++;
+    for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+      for(endd = p1 + total; p1<endd; p1++) { histo[*p1]++; }
+    }
 
     for(i=0; i<MXGRAY; i++) {
         left[i] = R; // left end of interval
@@ -54,8 +51,7 @@ HW_histoMatch(ImagePtr I1, ImagePtr Ilut, ImagePtr I2)
             Hsum -= lut[R];
             R++;
         }
-        if(left[i] != R)
-            index[i] = left[i];
+        if(left[i] != R) { index[i] = left[i]; }
         right[i] = R;
     }
 
@@ -71,18 +67,11 @@ HW_histoMatch(ImagePtr I1, ImagePtr Ilut, ImagePtr I2)
                         if(lim[*p1] > 0) {
                             *p2 = p;
                             lim[*p1] -= 1;
-                        } else {
-                            *p2 = p = left[*p1] = MIN(p+1, right[*p1]);
-                        }
-                    } else {
-                        *p2 = p;
-                    }
-                } else {
-                    *p2 = p;
-                }
-            } else {
-                *p2 = p = left[*p1] = MIN(p+1, right[*p1]);
-            }
+                        } else { *p2 = p = left[*p1] = MIN(p+1, right[*p1]); }
+                    } else { *p2 = p; }
+                } else { *p2 = p; }
+            } else { *p2 = p = left[*p1] = MIN(p+1, right[*p1]); }
+
             histo[p]++;
         }
     }
