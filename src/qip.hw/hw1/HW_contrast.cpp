@@ -15,12 +15,12 @@ HW_contrast(ImagePtr I1, double brightness, double contrast, ImagePtr I2)
 	int w = I1->width ();
 	int h = I1->height();
 	int total = w * h;
-    int reference = 128;
+  int reference = 128;
 
-   	// init lookup table
+	// init lookup table
 	int i, lut[MXGRAY];
 	for(i=0; i<MXGRAY; ++i)
-		lut[i] = (int)CLIP((i - reference)*contrast + reference + brightness, 0, 255);
+		lut[i] = (int)CLIP((i - reference)*contrast + reference + brightness, 0, MaxGray);
 
 	// evaluate output: each input pixel indexes into lut[] to eval output
 	int type;

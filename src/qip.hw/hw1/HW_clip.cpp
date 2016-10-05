@@ -19,9 +19,9 @@ HW_clip(ImagePtr I1, int t1, int t2, ImagePtr I2)
 	// init lookup table
 	int i, lut[MXGRAY];
 	for(i=0; i<MXGRAY; ++i) {
-		if(i<t1) lut[i] = t1;
+		if(i<t1)      lut[i] = t1;
 		else if(i>t2) lut[i] = t2;
-		else 	 lut[i] =  i;
+		else 	        lut[i] =  i;
 	}
 
 	// evaluate output: each input pixel indexes into lut[] to eval output

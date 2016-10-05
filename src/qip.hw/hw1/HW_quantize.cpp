@@ -14,40 +14,33 @@ HW_quantize(ImagePtr I1, int levels, bool dither, ImagePtr I2)
 	int h = I1->height();
 	int total = w * h;
 
-    int scale = MXGRAY / levels;
-    double bias = scale/2.0;
+  int scale = MXGRAY / levels;
+  double bias = scale/2.0;
 
 	// init lookup table
 	int i, lut[MXGRAY];
 	for(i=0; i<MXGRAY; ++i)
 		lut[i] = CLIP(int(scale * (i/scale) + bias), 0, 255);
 
-	// evaluate output: each input pixel indexes into lut[] to eval output
 	int type;
 	ChannelPtr<uchar> p1, p2, endd;
-	// for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-	// 	IP_getChannel(I2, ch, p2, type);
-	// 	for(endd = p1 + total; p1<endd;) *p2++ = lut[*p1++];
-	// }
 
-    if (!dither){ // if dither checkbox is unchecked
-        for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-            IP_getChannel(I2, ch, p2, type);
-            for(endd = p1 + total; p1<endd;) *p2++ = lut[*p1++];
-        }
-    } else {
-        int pixelPoint = 0;
-        int k;
-        for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-            IP_getChannel(I2, ch, p2, type);
-            for(endd = p1 + total; p1<endd; p1++, pixelPoint++) {
-                int noise = (double)rand() / RAND_MAX * bias;
-                if (pixelPoint % 2)
-                    k = CLIP(*p1 - noise, 0, 255);
-                else
-                    k = CLIP(*p1 + noise, 0, 255);
-                *p2++ = lut[k];
-            }
-        }
+  if (!dither){ // if dither checkbox is unchecked
+  	for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+    	IP_getChannel(I2, ch, p2, type);
+      for(endd = p1 + total; p1<endd;) *p2++ = lut[*p1++];
     }
+  } else {
+  	int pixelPoint = 0;
+  	int k;
+  	for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
+    	IP_getChannel(I2, ch, p2, type);
+      for(endd = p1 + total; p1<endd; p1++, pixelPoint++) {
+        int noise = (double)rand() / RAND_MAX * bias;
+        if(pixelPoint % 2) { k = CLIP(*p1 - noise, 0, 255); }
+        else 							 { k = CLIP(*p1 + noise, 0, 255); }
+        *p2++ = lut[k];
+      }
+    }
+  }
 }

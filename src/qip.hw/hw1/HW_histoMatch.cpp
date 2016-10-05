@@ -40,7 +40,7 @@ HW_histoMatch(ImagePtr I1, ImagePtr Ilut, ImagePtr I2)
 
     ChannelPtr<uchar> p1, p2, endd;
     for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-      for(endd = p1 + total; p1<endd; p1++) { histo[*p1]++; }
+      for(endd = p1 + total; p1<endd; p1++) histo[*p1]++;
     }
 
     for(i=0; i<MXGRAY; i++) {

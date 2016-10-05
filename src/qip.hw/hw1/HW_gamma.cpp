@@ -5,8 +5,6 @@
 //
 // Written by: Weifan Lin & Kaimin Jiang, 2016
 //
-#include <cmath> // for use of pow
-
 void
 HW_gammaCorrect(ImagePtr I1, double gamma, ImagePtr I2)
 {
@@ -19,8 +17,8 @@ HW_gammaCorrect(ImagePtr I1, double gamma, ImagePtr I2)
 
 	// init lookup table
 	int i, lut[MXGRAY];
-	for(i=0; i<MXGRAY; ++i) 
-        lut[i] = (int) (MaxGray * (std::pow ((double) i / MaxGray, gamma)));
+	for(i=0; i<MXGRAY; ++i)
+  	lut[i] = (int)CLIP((MaxGray * (pow((double) i / MaxGray, gamma))), 0, MaxGray);
 
 	// evaluate output: each input pixel indexes into lut[] to eval output
 	int type;
