@@ -20,9 +20,7 @@
 #include "Blur.h"
 #include "Sharpen.h"
 #include "Median.h"
-#ifdef GG
 #include "Convolve.h"
-#endif
 
 using namespace IP;
 
@@ -136,11 +134,9 @@ MainWindow::createActions()
 	m_actionMedian->setShortcut(tr("Ctrl+D"));
 	m_actionMedian->setData(MEDIAN);
 
-#ifdef GG
 	m_actionConvolve = new QAction("Con&volve", this);
 	m_actionConvolve->setShortcut(tr("Ctrl+V"));
 	m_actionConvolve->setData(CONVOLVE);
-#endif
 
 	// one signal-slot connection for all actions;
 	// execute() will resolve which action was triggered
@@ -179,9 +175,7 @@ MainWindow::createMenus()
 	m_menuNbrOps->addAction(m_actionBlur	   );
 	m_menuNbrOps->addAction(m_actionSharpen	   );
 	m_menuNbrOps->addAction(m_actionMedian	   );
-#ifdef GG
 	m_menuNbrOps->addAction(m_actionConvolve   );
-#endif
 
 	// disable the following menus until input image is read
 	m_menuPtOps ->setEnabled(false);
@@ -239,9 +233,7 @@ MainWindow::createGroupPanel()
 	m_imageFilter[BLUR	] = new Blur;
 	m_imageFilter[SHARPEN	] = new Sharpen;
 	m_imageFilter[MEDIAN	] = new Median;
-#ifdef GG
 	m_imageFilter[CONVOLVE	] = new Convolve;
-#endif
 
 	// create a stacked widget to hold multiple control panels
 	m_stackWidgetPanels = new QStackedWidget;
@@ -259,9 +251,7 @@ MainWindow::createGroupPanel()
 	m_stackWidgetPanels->addWidget(m_imageFilter[BLUR	 ]->controlPanel());
 	m_stackWidgetPanels->addWidget(m_imageFilter[SHARPEN	 ]->controlPanel());
 	m_stackWidgetPanels->addWidget(m_imageFilter[MEDIAN	 ]->controlPanel());
-#ifdef GG
 	m_stackWidgetPanels->addWidget(m_imageFilter[CONVOLVE	 ]->controlPanel());
-#endif
 
 	// display blank dummmy panel initially
 	m_stackWidgetPanels->setCurrentIndex(DUMMY);
@@ -597,6 +587,10 @@ MainWindow::open() {
 
 	// read input image
 	m_imageIn = IP_readImage(qPrintable(m_file));
+
+	// init vars
+	m_width  = m_imageSrc->width ();
+	m_height = m_imageSrc->height();
 
 	// set input radio button to be default
 	m_radioDisplay[0]->setChecked(true);

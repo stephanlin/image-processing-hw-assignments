@@ -45,7 +45,7 @@ HEADERS +=	MainWindow.h	\
 		Blur.h		\
 		Sharpen.h	\
 		Median.h	\
-#Convolve.h	\
+		Convolve.h	\
 
 		
 SOURCES +=	main.cpp	\ 
@@ -64,4 +64,4 @@ SOURCES +=	main.cpp	\
 		Blur.cpp	\
 		Sharpen.cpp	\
 		Median.cpp	\
-#Convolve.cpp	\
+		Convolve.cpp	\

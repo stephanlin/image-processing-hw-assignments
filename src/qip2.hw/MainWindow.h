@@ -31,7 +31,7 @@
 #include "ImageFilter.h"
 #include "qcustomplot.h"
 
-#define MAXFILTERS	50
+#define MAXFILTERS	100
 
 using namespace IP;
 
@@ -100,9 +100,7 @@ private:
 	QAction*		m_actionBlur	    ;
 	QAction*		m_actionSharpen	    ;
 	QAction*		m_actionMedian	    ;
-#ifdef GG
 	QAction*		m_actionConvolve    ;
-#endif
 
 	// homework objects
 	ImageFilter*		m_imageFilter[MAXFILTERS];
