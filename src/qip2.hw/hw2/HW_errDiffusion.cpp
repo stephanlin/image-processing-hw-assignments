@@ -270,7 +270,9 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
                     }
                 }
             }
-        }        
+        }
+        delete[] buffers;
+
     } else {
         for(int ch = 0; IP_getChannel(Ig, ch, p1, type); ch++) {
             IP_getChannel(I2, ch, p2, type);
