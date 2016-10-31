@@ -1,9 +1,7 @@
 #include <algorithm>
 #include <vector>
-// using std::vector;
 
-void copyRowToBuffer(ChannelPtr<uchar> &p1, short* buffer, int w, int sz);
-// void copyRowToBuffer(ChannelPtr<uchar>, int, short*, int);
+void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int);
 int getMedianWithK(std::vector<int>, int);
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -16,7 +14,8 @@ int getMedianWithK(std::vector<int>, int);
 void
 HW_median(ImagePtr I1, int sz, ImagePtr I2)
 {
-    int k = 0; // k nearest neighbors
+    if(sz % 2 == 0) sz++; // set sz to always be an odd number
+    int k = 0; // k nearest neighbors, k is default 0
     IP_copyImageHeader(I1, I2);
     int w = I1->width();
     int h = I1->height();
@@ -40,20 +39,15 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
             endd = p1+total;
 
             // copy first row to first sz/2 buffers, where are top padded rows
-            for (int i=0; i<sz/2; i++) {
-                copyRowToBuffer(p1, buffers[i], w, sz);
-                // copyRowToBuffer(p1, w, buffers[i], bufSz);
-                p1=p1-w; // we dont want to go to the next row, continue copying the first row
-            }
+            for (int i=0; i<sz/2; i++) copyRowToBuffer(p1, buffers[i], w, sz);
 
             // continue to rest of buffers, note here we still begin copying from frist row of I1
             for (int i=sz/2; i<sz; i++) {
                 copyRowToBuffer(p1, buffers[i], w, sz);
-                // copyRowToBuffer(p1, w, buffers[i], bufSz);
-                // p1=p1+w;
+                p1+=w;
             }
-            std::vector<int> v(0);  // vector for storing neighbors
 
+            std::vector<int> v(0);  // vector for storing neighbors
             for (int y=0; y<h; y++) {  // visit each row
                 for (int i=0; i<sz; i++) {  // visit each pixel value in neighborhood
                     for (int j=0; j<sz; j++) {
@@ -61,8 +55,9 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
                     }
                 }
 
-                for (int x=0; x<w; x++) {  // visit each pixel in row
-                    *p2++ = getMedianWithK(v, k);  // use sorting to find median
+                // visit each pixel in row
+                for (int x=0; x<w; x++) {
+                    *p2++ = getMedianWithK(v, k);  // use sorting to find median, k is default 0
 
                     if (x<w-1) {
                         v.erase(v.begin(), v.begin()+sz);  // delete outgoing column
@@ -76,44 +71,27 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
                 int nextRowIndex = y+sz-1;
                 int nextBufferIndex = nextRowIndex%sz;
                 copyRowToBuffer(p1, buffers[nextBufferIndex], w, sz);
-                // copyRowToBuffer(p1, w, buffers[nextBufferIndex], bufSz);
-                // p1=p1+w;
+                p1+=w;
                 if (p1>endd) p1-=w; // if have passed last pix, go back to the first pix of last row
             }
         }
     }
 }
 
-void
-copyRowToBuffer(ChannelPtr<uchar> &p1, short* buffer, int w, int sz) {
-    /* |..sz/2..|..w..|..sz/2..|  => bufSz=sz+w-1 */
-
-    int bufSz = sz+w-1;
-    for (int i=0; i<sz/2; i++) { buffer[i]=*p1; }
-    for (int i=sz/2; i<sz/2+w; i++) {
-        buffer[i] = *p1;
-        p1++;
-    }
-    p1-=1;
-    for (int i=sz/2+w; i<bufSz; i++) { buffer[i]=*p1; }
-    p1+=1;
-}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // copyRowToBuffer:
 //
-// copy a row of pixels to buffer with padding size of (bufSz-w)/2
+// copy a row of pixels to buffer with padding size of sz
+// |..sz/2..|..w..|..sz/2..|
 //
-// void
-// copyRowToBuffer(ChannelPtr<uchar> p1, int width, short* buffer, int bufSz) {
-//     int padSz = (bufSz-width)/2; // padding size
-//     for (int i = 0          ; i < padSz      ; i++) buffer[i] = *p1; // left padding
-//     for (int i = padSz      ; i < bufSz-padSz; i++) buffer[i] = *p1++;
-//     for (int i = bufSz-padSz; i < bufSz      ; i++) buffer[i] = *p1; // right padding
-// }
-
-
-
+void
+copyRowToBuffer(ChannelPtr<uchar> p1, short* buffer, int w, int sz) {
+    int bufSz = sz+w-1;
+    for (int i = 0     ; i < sz/2  ; i++) buffer[i] = *p1  ;
+    for (int i = sz/2  ; i < sz/2+w; i++) buffer[i] = *p1++;
+    for (int i = sz/2+w; i < bufSz ; i++) buffer[i] = *p1  ;
+}
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
