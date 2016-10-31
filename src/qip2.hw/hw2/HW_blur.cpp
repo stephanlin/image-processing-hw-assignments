@@ -60,7 +60,7 @@ HW_blur(ImagePtr I1, int filterW, int filterH, ImagePtr I2)
 void
 blur1D(ChannelPtr<uchar> src, int len, int stride, int ww, ChannelPtr<uchar> dst)
 {
-    if(ww % 2 == 0) ww--; // set ww to always be an odd number
+    if(ww % 2 == 0) ww++; // set ww to always be an odd number
     int neighborSz = ww/2; // how many pixels on the left and right
     int bufSz = len+ww-1; // this is len for padded buffer
     short* buffer = new short[bufSz]; // buffer to store a padded rows or columns
