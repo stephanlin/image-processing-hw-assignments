@@ -1,5 +1,5 @@
 void gammaCorrect(ImagePtr, double, ImagePtr);
-void copyToBuffer(ChannelPtr<uchar> &p1, int width, short* buffer, int bufSz);
+void copyRowToBuffer(ChannelPtr<uchar>, int, short*, int);
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_errDiffusion:
 //
@@ -28,59 +28,107 @@ void copyToBuffer(ChannelPtr<uchar> &p1, int width, short* buffer, int bufSz);
 void
 HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr I2)
 {
-    if(method == 0) {
-
-    }
-    int thr = 128;
+    ImagePtr Ig;
     IP_copyImageHeader(I1, I2);
+    IP_copyImageHeader(I1, Ig);
+    gammaCorrect(I1, gamma, Ig);
+
     int w = I1->width();
     int h = I1->height();
 
-    short* in1;
-    short* in2;
-    short e;
-
-    int bufSz = w + 2;
-    short* buffer0 = new short[bufSz];
-    short* buffer1 = new short[bufSz];
-
-    int i, lut[MXGRAY];
-    for(i=0; i<thr && i<MXGRAY; ++i) lut[i] = 0;
-    for(   ; i <= MaxGray;      ++i) lut[i] = MaxGray;
-
+    int thr = MXGRAY/2;
     int type;
     ChannelPtr<uchar> p1, p2, endd;
-    for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
-        IP_getChannel(I2, ch, p2, type);
 
-        // copy first row to buffer0
-        copyToBuffer(p1, w, buffer0, bufSz);
+    if(method == 0) { // Use Floyd-Steinberg
+        short* in1;
+        short* in2;
+        short e;
 
-        if(method == 0) {
+        int bufSz = w + 2;
+        short* buffer0 = new short[bufSz]; // top buffer
+        short* buffer1 = new short[bufSz]; // buttom buffer
+
+        for(int ch = 0; IP_getChannel(Ig, ch, p1, type); ch++) {
+            IP_getChannel(I2, ch, p2, type);
+
+            // copy first row to top buffer
+            copyRowToBuffer(p1, w, buffer0, bufSz);
+            p1 = p1 + w;
+
             for(int y=1; y<h; y++) {
-                if (y % 2 == 0) {
-                    copyToBuffer(p1, w, buffer0, bufSz);
-                    in1 = buffer1+1; // +1 to skip the pad
-                    in2 = buffer0+1;
-                } else {
-                    copyToBuffer(p1, w, buffer1, bufSz);
-                    in1 = buffer0+1;
-                    in2 = buffer1+1;
-                }
-                for(int x=0; x<w; x++) {
-                    *p2 = (*in1 < thr) ? 0 : 255; //lut[*in1];  not working
-                    e = *in1 - *p2;
-                    in1[1 ] += (e*7/16.0);
-                    in2[-1] += (e*3/16.0);
-                    in2[0 ] += (e*5/16.0);
-                    in2[1 ] += (e*1/16.0);
+                if(serpentine) { // serpentine scan
+                    if (y % 2 == 0) { // on even rows
+                        copyRowToBuffer(p1, w, buffer0, bufSz);
+                        p1 = p1 + w;
+                        in1 = buffer1 + w;
+                        in2 = buffer0 + w;
+                        p2 = p2 + w - 1;
 
-                    in1++;
-                    in2++;
-                    p2++;
+                        for(int x=0; x<w; x++) {
+                            *p2 = (*in1 < thr) ? 0 : 255;
+                            e = *in1 - *p2;
+                            in1[-1] += (e*7/16.0);
+                            in2[1] += (e*3/16.0);
+                            in2[0 ] += (e*5/16.0);
+                            in2[-1] += (e*1/16.0);
+
+                            in1--;
+                            in2--;
+                            p2--;
+                        }
+                        p2 = p2 + w + 1;
+
+                    } else { // on add rows
+                        copyRowToBuffer(p1, w, buffer1, bufSz);
+                        p1 = p1 + w;
+                        in1 = buffer0+1;
+                        in2 = buffer1+1;
+
+                        for(int x=0; x<w; x++) {
+                            *p2 = (*in1 < thr) ? 0 : 255;
+                            e = *in1 - *p2;
+                            in1[1 ] += (e*7/16.0);
+                            in2[-1] += (e*3/16.0);
+                            in2[0 ] += (e*5/16.0);
+                            in2[1 ] += (e*1/16.0);
+
+                            in1++;
+                            in2++;
+                            p2++;
+                        }
+                    }
+                } else { // raster scan
+                    if (y % 2 == 0) {
+                        copyRowToBuffer(p1, w, buffer0, bufSz);
+                        in1 = buffer1+1; // +1 to skip the pad
+                        in2 = buffer0+1;
+                    } else {
+                        copyRowToBuffer(p1, w, buffer1, bufSz);
+                        in1 = buffer0+1;
+                        in2 = buffer1+1;
+                    }
+                    p1 = p1 + w;
+
+                    for(int x=0; x<w; x++) {
+                        *p2 = (*in1 < thr) ? 0 : 255;
+                        e = *in1 - *p2;
+                        in1[1 ] += (e*7/16.0);
+                        in2[-1] += (e*3/16.0);
+                        in2[0 ] += (e*5/16.0);
+                        in2[1 ] += (e*1/16.0);
+
+                        in1++;
+                        in2++;
+                        p2++;
+                    }
                 }
             }
         }
+        delete [] buffer0;
+        delete [] buffer1;
+    } else { // Use Jarvis-Judice-Ninke
+
     }
 }
 
@@ -117,9 +165,21 @@ gammaCorrect(ImagePtr I1, double gamma, ImagePtr I2)
 }
 
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// copyRowToBuffer:
+//
+// copy a row of pixels to buffer with padding size of (bufSz - w) / 2
+//
 void
-copyToBuffer(ChannelPtr<uchar> &p1, int width, short* buffer, int bufSz) {
-    buffer[0] = *p1; //0?
-    buffer[bufSz-1] = *(p1+width-1); //0?
-    for (int i = 1; i < bufSz-1; i++) buffer[i] = *p1++;
+copyRowToBuffer(ChannelPtr<uchar> p1, int width, short* buffer, int bufSz) {
+    int padSz = (bufSz-width)/2; // padding size
+    for (int i = 0          ; i < padSz      ; i++) buffer[i] = *p1; // left padding
+    for (int i = padSz      ; i < bufSz-padSz; i++) buffer[i] = *p1++;
+    for (int i = bufSz-padSz; i < bufSz      ; i++) buffer[i] = *p1; // right padding
 }
+
+
+
+
+
+
