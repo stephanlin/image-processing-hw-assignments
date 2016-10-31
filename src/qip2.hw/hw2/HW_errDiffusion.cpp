@@ -56,22 +56,22 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
             copyRowToBuffer(p1, w, buffer0, bufSz);
             p1 = p1 + w;
 
-            for(int y=1; y<h; y++) {
+            for(int y = 1; y < h; y++) {
                 if(serpentine) { // serpentine scan
                     if (y % 2 == 0) { // on even rows
                         copyRowToBuffer(p1, w, buffer0, bufSz);
                         p1 = p1 + w;
-                        in1 = buffer1 + w;
-                        in2 = buffer0 + w;
-                        p2 = p2 + w - 1;
+                        in1 = buffer1 + w + 1;
+                        in2 = buffer0 + w + 1;
 
-                        for(int x=0; x<w; x++) {
+                        p2 = p2 + w - 1;
+                        for(int x = 0; x < w; x++) {
                             *p2 = (*in1 < thr) ? 0 : 255;
                             e = *in1 - *p2;
-                            in1[-1] += (e*7/16.0);
-                            in2[1] += (e*3/16.0);
-                            in2[0 ] += (e*5/16.0);
-                            in2[-1] += (e*1/16.0);
+                            *(in1-1) += (e*7/16.0);
+                            *(in2-1) += (e*3/16.0);
+                            *(in2  ) += (e*5/16.0);
+                            *(in2-1) += (e*1/16.0);
 
                             in1--;
                             in2--;
@@ -82,16 +82,16 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
                     } else { // on add rows
                         copyRowToBuffer(p1, w, buffer1, bufSz);
                         p1 = p1 + w;
-                        in1 = buffer0+1;
-                        in2 = buffer1+1;
+                        in1 = buffer0 + 1;
+                        in2 = buffer1 + 1;
 
-                        for(int x=0; x<w; x++) {
+                        for(int x = 0; x < w; x++) {
                             *p2 = (*in1 < thr) ? 0 : 255;
                             e = *in1 - *p2;
-                            in1[1 ] += (e*7/16.0);
-                            in2[-1] += (e*3/16.0);
-                            in2[0 ] += (e*5/16.0);
-                            in2[1 ] += (e*1/16.0);
+                            *(in1+1) += (e*7/16.0);
+                            *(in2-1) += (e*3/16.0);
+                            *(in2  ) += (e*5/16.0);
+                            *(in2+1) += (e*1/16.0);
 
                             in1++;
                             in2++;
@@ -110,13 +110,13 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
                     }
                     p1 = p1 + w;
 
-                    for(int x=0; x<w; x++) {
+                    for(int x = 0; x < w; x++) {
                         *p2 = (*in1 < thr) ? 0 : 255;
                         e = *in1 - *p2;
-                        in1[1 ] += (e*7/16.0);
-                        in2[-1] += (e*3/16.0);
-                        in2[0 ] += (e*5/16.0);
-                        in2[1 ] += (e*1/16.0);
+                        *(in1+1) += (e*7/16.0);
+                        *(in2-1) += (e*3/16.0);
+                        *(in2  ) += (e*5/16.0);
+                        *(in2+1) += (e*1/16.0);
 
                         in1++;
                         in2++;
@@ -127,11 +127,157 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
         }
         delete [] buffer0;
         delete [] buffer1;
-    } else { // Use Jarvis-Judice-Ninke
 
+    } else if (method == 1) { // Use Jarvis-Judice-Ninke
+        short** in = new short*[3];
+        int e;
+
+        int bufSz = w+4;
+        short** buffers = new short*[3];
+        for(int i = 0; i < 3; i++) {
+            buffers[i] = new short[bufSz];
+        }
+
+        for(int ch = 0; IP_getChannel(Ig, ch, p1, type); ch++) {
+            IP_getChannel(I2, ch, p2, type);
+
+            // copy first row to first 2 buffers
+            copyRowToBuffer(p1, w, buffers[0], bufSz);
+            copyRowToBuffer(p1, w, buffers[1], bufSz);
+            p1 = p1 + w;
+
+            for(int y = 2; y < h; y++) {
+                if      (y % 3 == 0) copyRowToBuffer(p1, w, buffers[0], bufSz);
+                else if (y % 3 == 1) copyRowToBuffer(p1, w, buffers[1], bufSz);
+                else if (y % 3 == 2) copyRowToBuffer(p1, w, buffers[2], bufSz);
+                p1 = p1 + w;
+
+                if(serpentine) { // serpentine scan
+                    if (y % 2 == 0) { // on even rows
+                        if (y % 3 == 0) {
+                            in[0] = buffers[1] + w + 2;
+                            in[1] = buffers[2] + w + 2;
+                            in[2] = buffers[0] + w + 2;
+
+                        } else if (y % 3 == 1) {
+                            in[0] = buffers[2] + w + 2;
+                            in[1] = buffers[0] + w + 2;
+                            in[2] = buffers[1] + w + 2;
+
+                        } else {
+                            in[0] = buffers[0] + w + 2;
+                            in[1] = buffers[1] + w + 2;
+                            in[2] = buffers[2] + w + 2;
+
+                        }
+
+                        p2 = p2 + w - 1;
+                        for (int x = 0; x < w; x++) {
+                            *p2 = (*in[0] < thr)? 0 : 255;
+                            e = *in[0] - *p2;
+                            *(in[0]-1) += (e * 7/48);
+                            *(in[0]-2) += (e * 5/48);
+                            *(in[1]  ) += (e * 7/48);
+                            *(in[1]+1) += (e * 5/48);
+                            *(in[1]+2) += (e * 3/48);
+                            *(in[1]-1) += (e * 5/48);
+                            *(in[1]-2) += (e * 3/48);
+                            *(in[2]  ) += (e * 5/48);
+                            *(in[2]+1) += (e * 3/48);
+                            *(in[2]+2) += (e * 1/48);
+                            *(in[2]-1) += (e * 3/48);
+                            *(in[2]-2) += (e * 1/48);
+                            in[0]--;
+                            in[1]--;
+                            in[2]--;
+                            p2--;
+                        }
+                        p2 = p2 + w + 1;
+                    } else { // on add rows
+                        if (y % 3 == 0) {
+                            in[0] = buffers[1] + 2;
+                            in[1] = buffers[2] + 2;
+                            in[2] = buffers[0] + 2;
+
+                        } else if(y % 3 == 1) {
+                            in[0] = buffers[2] + 2;
+                            in[1] = buffers[0] + 2;
+                            in[2] = buffers[1] + 2;
+
+                        } else {
+                            in[0] = buffers[0] + 2;
+                            in[1] = buffers[1] + 2;
+                            in[2] = buffers[2] + 2;
+
+                        }
+                        for (int x = 0; x < w; x++) {
+                            *p2 = (*in[0] < thr)? 0 : 255;
+                            e = *in[0] - *p2;
+                            *(in[0]+1) += (e * 7/48);
+                            *(in[0]+2) += (e * 5/48);
+                            *(in[1]  ) += (e * 7/48);
+                            *(in[1]+1) += (e * 5/48);
+                            *(in[1]+2) += (e * 3/48);
+                            *(in[1]-1) += (e * 5/48);
+                            *(in[1]-2) += (e * 3/48);
+                            *(in[2]  ) += (e * 5/48);
+                            *(in[2]+1) += (e * 3/48);
+                            *(in[2]+2) += (e * 1/48);
+                            *(in[2]-1) += (e * 3/48);
+                            *(in[2]-2) += (e * 1/48);
+                            in[0]++;
+                            in[1]++;
+                            in[2]++;
+                            p2++;
+                        }
+                    }
+                } else { // raster scan
+                    if (y % 3 == 0) {
+                        in[0] = buffers[1] + 2;
+                        in[1] = buffers[2] + 2;
+                        in[2] = buffers[0] + 2;
+
+                    } else if(y % 3 == 1) {
+                        in[0] = buffers[2] + 2;
+                        in[1] = buffers[0] + 2;
+                        in[2] = buffers[1] + 2;
+
+                    } else {
+                        in[0] = buffers[0] + 2;
+                        in[1] = buffers[1] + 2;
+                        in[2] = buffers[2] + 2;
+
+                    }
+                    for (int x = 0; x < w; x++) {
+                        *p2 = (*in[0] < thr)? 0 : 255;
+                        e = *in[0] - *p2;
+                        *(in[0]+1) += (e * 7/48);
+                        *(in[0]+2) += (e * 5/48);
+                        *(in[1]  ) += (e * 7/48);
+                        *(in[1]+1) += (e * 5/48);
+                        *(in[1]+2) += (e * 3/48);
+                        *(in[1]-1) += (e * 5/48);
+                        *(in[1]-2) += (e * 3/48);
+                        *(in[2]  ) += (e * 5/48);
+                        *(in[2]+1) += (e * 3/48);
+                        *(in[2]+2) += (e * 1/48);
+                        *(in[2]-1) += (e * 3/48);
+                        *(in[2]-2) += (e * 1/48);
+                        in[0]++;
+                        in[1]++;
+                        in[2]++;
+                        p2++;
+                    }
+                }
+            }
+        }        
+    } else {
+        for(int ch = 0; IP_getChannel(Ig, ch, p1, type); ch++) {
+            IP_getChannel(I2, ch, p2, type);
+            for(endd = p1 + w * h; p1<endd;) *p2++ = *p1++;
+        }
     }
 }
-
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -168,7 +314,7 @@ gammaCorrect(ImagePtr I1, double gamma, ImagePtr I2)
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // copyRowToBuffer:
 //
-// copy a row of pixels to buffer with padding size of (bufSz - w) / 2
+// copy a row of pixels to buffer with padding size of (bufSz-w)/2
 //
 void
 copyRowToBuffer(ChannelPtr<uchar> p1, int width, short* buffer, int bufSz) {
@@ -177,9 +323,3 @@ copyRowToBuffer(ChannelPtr<uchar> p1, int width, short* buffer, int bufSz) {
     for (int i = padSz      ; i < bufSz-padSz; i++) buffer[i] = *p1++;
     for (int i = bufSz-padSz; i < bufSz      ; i++) buffer[i] = *p1; // right padding
 }
-
-
-
-
-
-
