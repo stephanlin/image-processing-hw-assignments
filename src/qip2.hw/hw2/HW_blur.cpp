@@ -30,7 +30,7 @@ HW_blur(ImagePtr I1, int filterW, int filterH, ImagePtr I2)
         if (filterW > 1) {
             // blur rows one by one
             for (int y=0; y<h; y++) {
-                blur1D(p1, w, filterW, 1, p3);
+                blur1D(p1, w, 1, filterW, p3);
                 p1+=w;
                 p3+=w;
             }
@@ -42,7 +42,7 @@ HW_blur(ImagePtr I1, int filterW, int filterH, ImagePtr I2)
         if (filterH > 1) {
             // blur columns one by one
             for (int x=0; x<w; x++) {
-                blur1D(p3, h, filterH, w, p2);
+                blur1D(p3, h, w, filterH, p2);
                 p3+=1;
                 p2+=1;
             }
@@ -60,25 +60,26 @@ HW_blur(ImagePtr I1, int filterW, int filterH, ImagePtr I2)
 void
 blur1D(ChannelPtr<uchar> src, int len, int stride, int ww, ChannelPtr<uchar> dst)
 {
+    if(ww % 2 == 0) ww--; // set ww to always be an odd number
     int neighborSz = ww/2; // how many pixels on the left and right
-    int padLen = len+ww-1; // this is len for padded buffer
-    short* buffer = new short[padLen]; // buffer to store a padded row or column
+    int bufSz = len+ww-1; // this is len for padded buffer
+    short* buffer = new short[bufSz]; // buffer to store a padded rows or columns
 
     // copy to buffer
-    for (int i=0; i<neighborSz; i++) { buffer[i] = *src; }  // copy first pixel to left padded area
+    for (int i = 0; i < neighborSz; i++) { buffer[i] = *src; }  // copy first pixel to left padded area
     int index = 0;
-    for (int i=neighborSz; i < len+neighborSz; i++) {  // continue with pixel replication
+    for (int i = neighborSz; i < len+neighborSz; i++) {  // continue with pixel replication
         buffer[i] = src[index];
         index+=stride;  // next index
     }
-    for (int i=len+neighborSz; i<padLen; i++) { buffer[i] = src[index-stride]; } // copy last pixel to right padded area
+    for (int i = len+neighborSz; i < bufSz; i++) { buffer[i] = src[index-stride]; } // copy last pixel to right padded area
 
     unsigned short sum = 0;
-    for(int i=0; i<ww; i++) { sum+=buffer[i]; }  // sum of pixel values in the neighborhood
-    for (int i=0; i<len; i++) {
+    for (int i = 0; i<ww ; i++) { sum+=buffer[i]; }  // sum of pixel values in the neighborhood
+    for (int i = 0; i<len; i++) {
         dst[i*stride] = sum/ww;  // average
         sum+=(buffer[i+ww] - buffer[i]);  // substract outgoing pixel and add incoming pixel
     }
 
-    delete [] buffer; // delete buffer otherwise memory leaking
+    delete [] buffer; // delete buffer
 }
