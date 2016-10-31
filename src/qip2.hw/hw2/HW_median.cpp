@@ -75,6 +75,7 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
                 if (p1>endd) p1-=w; // if have passed last pix, go back to the first pix of last row
             }
         }
+        for (int i=0; i<sz; i++) delete[] buffers[i];
     }
 }
 
