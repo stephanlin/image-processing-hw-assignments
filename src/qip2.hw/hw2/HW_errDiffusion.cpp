@@ -125,8 +125,8 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
                 }
             }
         }
-        delete [] buffer0;
-        delete [] buffer1;
+        delete[] buffer0;
+        delete[] buffer1;
 
     } else if (method == 1) { // Use Jarvis-Judice-Ninke
         short** in = new short*[3];

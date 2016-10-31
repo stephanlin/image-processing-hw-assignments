@@ -32,7 +32,7 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
     } else if (sz > 1) {
         int bufSz = sz+w-1; // size of buffer for each padded row
         short* buffers[sz]; // array of sz pointers
-        for (int i=0; i<sz; i++) { buffers[i] = new short[bufSz]; }
+        for (int i=0; i<sz; i++) buffers[i] = new short[bufSz];
 
         for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
             IP_getChannel(I2, ch, p2, type);
