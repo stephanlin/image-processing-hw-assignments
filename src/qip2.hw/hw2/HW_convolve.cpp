@@ -69,7 +69,6 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
                 // visit each pixel in row
                 for (int x=0; x<w; x++) {
                     *p2++ = CLIP(getSumWithKernel(v, vKernel), 0, 255);
-                    qDebug() << p2[-1];
                     if (x<w-1) {
                         v.erase(v.begin(), v.begin()+sz);  // delete outgoing column
                         for (int i=0; i<sz; i++) v.push_back(buffers[i][x+sz]);  // add incoming column
@@ -77,13 +76,12 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
                 }
                 v.clear(); // clear vector
 
-                int nextRowIndex = y+sz-1;
-                int nextBufferIndex = nextRowIndex%sz;
-                copyRowToBuffer(p1, buffers[nextBufferIndex], w, sz);
+                // circular quque
+                for (int i = 1; i<sz; i++) buffers[i] = buffers[0];
+                copyRowToBuffer(p1, buffers[sz-1], w, sz);
                 if (p1 < endd-w) p1+=w;
             }
         }
-        for (int i=0; i<sz; i++) delete[] buffers[i];
     }
 }
 
