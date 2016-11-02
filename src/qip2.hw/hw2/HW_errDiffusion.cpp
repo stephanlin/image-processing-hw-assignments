@@ -327,5 +327,6 @@ copyRowToBuffer(ChannelPtr<uchar> p1, short* buffer, int w, int sz) {
     int bufSz = sz+w-1;
     for (int i = 0     ; i < sz/2  ; i++) buffer[i] = *p1  ;
     for (int i = sz/2  ; i < sz/2+w; i++) buffer[i] = *p1++;
+    p1--;
     for (int i = sz/2+w; i < bufSz ; i++) buffer[i] = *p1  ;
 }

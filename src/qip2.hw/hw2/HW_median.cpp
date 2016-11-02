@@ -71,8 +71,7 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
                 int nextRowIndex = y+sz-1;
                 int nextBufferIndex = nextRowIndex%sz;
                 copyRowToBuffer(p1, buffers[nextBufferIndex], w, sz);
-                p1+=w;
-                if (p1>endd) p1-=w; // if have passed last pix, go back to the first pix of last row
+                if (p1 < endd) p1+=w;
             }
         }
         for (int i=0; i<sz; i++) delete[] buffers[i];
