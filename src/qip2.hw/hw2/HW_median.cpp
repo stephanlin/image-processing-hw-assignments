@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int);
+extern void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int); // see implementation in HW_errDiffusion.cpp
 int getMedianWithK(std::vector<int>, int);
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,21 +77,6 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
         }
         for (int i=0; i<sz; i++) delete[] buffers[i];
     }
-}
-
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// copyRowToBuffer:
-//
-// copy a row of pixels to buffer with padding size of sz
-// |..sz/2..|..w..|..sz/2..|
-//
-void
-copyRowToBuffer(ChannelPtr<uchar> p1, short* buffer, int w, int sz) {
-    int bufSz = sz+w-1;
-    for (int i = 0     ; i < sz/2  ; i++) buffer[i] = *p1  ;
-    for (int i = sz/2  ; i < sz/2+w; i++) buffer[i] = *p1++;
-    for (int i = sz/2+w; i < bufSz ; i++) buffer[i] = *p1  ;
 }
 
 

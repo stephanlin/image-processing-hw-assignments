@@ -1,5 +1,6 @@
 void gammaCorrect(ImagePtr, double, ImagePtr);
-void copyRowToBuffer(ChannelPtr<uchar>, int, short*, int);
+void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int);
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_errDiffusion:
 //
@@ -35,7 +36,7 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
 
     int w = I1->width();
     int h = I1->height();
-
+    int kernelSz = 3;
     int thr = MXGRAY/2;
     int type;
     ChannelPtr<uchar> p1, p2, endd;
@@ -46,6 +47,7 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
         short e;
 
         int bufSz = w + 2;
+
         short* buffer0 = new short[bufSz]; // top buffer
         short* buffer1 = new short[bufSz]; // buttom buffer
 
@@ -53,13 +55,13 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
             IP_getChannel(I2, ch, p2, type);
 
             // copy first row to top buffer
-            copyRowToBuffer(p1, w, buffer0, bufSz);
+            copyRowToBuffer(p1, buffer0, w, kernelSz);
             p1 = p1 + w;
 
             for(int y = 1; y < h; y++) {
                 if(serpentine) { // serpentine scan
                     if (y % 2 == 0) { // on even rows
-                        copyRowToBuffer(p1, w, buffer0, bufSz);
+                        copyRowToBuffer(p1, buffer0, w, kernelSz);
                         p1 = p1 + w;
                         in1 = buffer1 + w + 1;
                         in2 = buffer0 + w + 1;
@@ -80,7 +82,7 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
                         p2 = p2 + w + 1;
 
                     } else { // on add rows
-                        copyRowToBuffer(p1, w, buffer1, bufSz);
+                        copyRowToBuffer(p1, buffer1, w, kernelSz);
                         p1 = p1 + w;
                         in1 = buffer0 + 1;
                         in2 = buffer1 + 1;
@@ -100,11 +102,11 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
                     }
                 } else { // raster scan
                     if (y % 2 == 0) {
-                        copyRowToBuffer(p1, w, buffer0, bufSz);
+                        copyRowToBuffer(p1, buffer0, w, kernelSz);
                         in1 = buffer1+1; // +1 to skip the pad
                         in2 = buffer0+1;
                     } else {
-                        copyRowToBuffer(p1, w, buffer1, bufSz);
+                        copyRowToBuffer(p1, buffer1, w, kernelSz);
                         in1 = buffer0+1;
                         in2 = buffer1+1;
                     }
@@ -133,6 +135,7 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
         int e;
 
         int bufSz = w+4;
+        kernelSz = 5;
         short** buffers = new short*[3];
         for(int i = 0; i < 3; i++) {
             buffers[i] = new short[bufSz];
@@ -142,14 +145,14 @@ HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr
             IP_getChannel(I2, ch, p2, type);
 
             // copy first row to first 2 buffers
-            copyRowToBuffer(p1, w, buffers[0], bufSz);
-            copyRowToBuffer(p1, w, buffers[1], bufSz);
+            copyRowToBuffer(p1, buffers[0], w, kernelSz);
+            copyRowToBuffer(p1, buffers[1], w, kernelSz);
             p1 = p1 + w;
 
             for(int y = 2; y < h; y++) {
-                if      (y % 3 == 0) copyRowToBuffer(p1, w, buffers[0], bufSz);
-                else if (y % 3 == 1) copyRowToBuffer(p1, w, buffers[1], bufSz);
-                else if (y % 3 == 2) copyRowToBuffer(p1, w, buffers[2], bufSz);
+                if      (y % 3 == 0) copyRowToBuffer(p1, buffers[0], w, kernelSz);
+                else if (y % 3 == 1) copyRowToBuffer(p1, buffers[1], w, kernelSz);
+                else if (y % 3 == 2) copyRowToBuffer(p1, buffers[2], w, kernelSz);
                 p1 = p1 + w;
 
                 if(serpentine) { // serpentine scan
@@ -316,12 +319,13 @@ gammaCorrect(ImagePtr I1, double gamma, ImagePtr I2)
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // copyRowToBuffer:
 //
-// copy a row of pixels to buffer with padding size of (bufSz-w)/2
+// copy a row of pixels to buffer with padding size of sz
+// |..sz/2..|..w..|..sz/2..|
 //
 void
-copyRowToBuffer(ChannelPtr<uchar> p1, int width, short* buffer, int bufSz) {
-    int padSz = (bufSz-width)/2; // padding size
-    for (int i = 0          ; i < padSz      ; i++) buffer[i] = *p1; // left padding
-    for (int i = padSz      ; i < bufSz-padSz; i++) buffer[i] = *p1++;
-    for (int i = bufSz-padSz; i < bufSz      ; i++) buffer[i] = *p1; // right padding
+copyRowToBuffer(ChannelPtr<uchar> p1, short* buffer, int w, int sz) {
+    int bufSz = sz+w-1;
+    for (int i = 0     ; i < sz/2  ; i++) buffer[i] = *p1  ;
+    for (int i = sz/2  ; i < sz/2+w; i++) buffer[i] = *p1++;
+    for (int i = sz/2+w; i < bufSz ; i++) buffer[i] = *p1  ;
 }
