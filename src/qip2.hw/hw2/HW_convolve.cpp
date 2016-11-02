@@ -24,13 +24,14 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
 
     int type;
     ChannelPtr<uchar> p1, p2, endd;
+
     ChannelPtr<float> pKernel;
     IP_getChannel(Ikernel, 0, pKernel, type);
     std::vector<float> vKernel(0);
     for (int i=0; i<sz; i++) {
       for (int j=0; j<sz; j++) {
         vKernel.push_back(pKernel[i+j*sz]);
-        //qDebug() << pKernel[i+j*sz];
+        // qDebug() << vKernel.back();
       }
     }
 
@@ -67,7 +68,8 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
 
                 // visit each pixel in row
                 for (int x=0; x<w; x++) {
-                    *p2++ = (int)CLIP(getSumWithKernel(v, vKernel), 0, MaxGray);
+                    *p2++ = CLIP(getSumWithKernel(v, vKernel), 0, 255);
+                    qDebug() << p2[-1];
                     if (x<w-1) {
                         v.erase(v.begin(), v.begin()+sz);  // delete outgoing column
                         for (int i=0; i<sz; i++) v.push_back(buffers[i][x+sz]);  // add incoming column
@@ -78,7 +80,7 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
                 int nextRowIndex = y+sz-1;
                 int nextBufferIndex = nextRowIndex%sz;
                 copyRowToBuffer(p1, buffers[nextBufferIndex], w, sz);
-                if (p1 < endd) p1+=w;
+                if (p1 < endd-w) p1+=w;
             }
         }
         for (int i=0; i<sz; i++) delete[] buffers[i];
@@ -98,7 +100,7 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
 int
 getSumWithKernel(std::vector<int> v, std::vector<float> k) {
     int vSz = v.size();
-    double sum = 0.0;
+    float sum = 0.0;
     for (int i=0; i<vSz; i++) sum += (v[i] * k[i]);
     return sum;
 }
