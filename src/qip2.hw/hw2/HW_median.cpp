@@ -68,8 +68,7 @@ HW_median(ImagePtr I1, int sz, ImagePtr I2)
                 }
                 v.clear(); // clear vector
 
-                int nextRowIndex = y+sz-1;
-                int nextBufferIndex = nextRowIndex%sz;
+                int nextBufferIndex = (y+sz-1)%sz;
                 copyRowToBuffer(p1, buffers[nextBufferIndex], w, sz);
                 if (p1 < endd-w) p1+=w;
             }
