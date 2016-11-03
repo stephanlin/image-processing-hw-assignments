@@ -1,6 +1,3 @@
-void gammaCorrect(ImagePtr, double, ImagePtr);
-void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int);
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_errDiffusion:
 //
@@ -26,6 +23,11 @@ void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int);
 // Apply gamma correction to I1 prior to error diffusion.
 // Output is saved in I2.
 //
+// Written by: Weifan Lin & Kaimin Jiang, 2016
+//
+void gammaCorrect(ImagePtr, double, ImagePtr);
+void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int);
+
 void
 HW_errDiffusion(ImagePtr I1, int method, bool serpentine, double gamma, ImagePtr I2)
 {

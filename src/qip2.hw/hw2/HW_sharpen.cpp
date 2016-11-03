@@ -1,11 +1,13 @@
-extern void HW_blur  (ImagePtr, int, int, ImagePtr);
-extern void HW_blur1D(ChannelPtr<uchar>, int, int, int, ChannelPtr<uchar>);
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_sharpen:
 //
 // Sharpen image I1. Output is in I2.
 //
+// Written by: Weifan Lin & Kaimin Jiang, 2016
+//
+extern void HW_blur  (ImagePtr, int, int, ImagePtr);
+extern void HW_blur1D(ChannelPtr<uchar>, int, int, int, ChannelPtr<uchar>);
+
 void
 HW_sharpen(ImagePtr I1, int size, double factor, ImagePtr I2)
 {

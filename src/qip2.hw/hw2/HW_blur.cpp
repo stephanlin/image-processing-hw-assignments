@@ -1,5 +1,3 @@
-void blur1D(ChannelPtr<uchar>, int, int, int, ChannelPtr<uchar>);
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_blur:
 //
@@ -8,6 +6,10 @@ void blur1D(ChannelPtr<uchar>, int, int, int, ChannelPtr<uchar>);
 // We force the kernel dimensions to be odd.
 // Output is in I2.
 //
+// Written by: Weifan Lin & Kaimin Jiang, 2016
+//
+void blur1D(ChannelPtr<uchar>, int, int, int, ChannelPtr<uchar>);
+
 void
 HW_blur(ImagePtr I1, int filterW, int filterH, ImagePtr I2)
 {

@@ -1,10 +1,12 @@
-extern void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int); // see implementation in HW_errDiffusion.cpp
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_convolve:
 //
 // Apply image convolution on I1. Output is in I2.
 //
+// Written by: Weifan Lin & Kaimin Jiang, 2016
+//
+extern void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int); // see implementation in HW_errDiffusion.cpp
+
 void
 HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
 {

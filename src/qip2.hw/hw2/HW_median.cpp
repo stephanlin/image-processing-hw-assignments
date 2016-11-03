@@ -1,9 +1,3 @@
-#include <algorithm>
-#include <vector>
-
-extern void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int); // see implementation in HW_errDiffusion.cpp
-int getMedianWithK(std::vector<int>, int);
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_median:
 //
@@ -11,6 +5,13 @@ int getMedianWithK(std::vector<int>, int);
 // Clamp sz to 9.
 // Output is in I2.
 //
+// Written by: Weifan Lin & Kaimin Jiang, 2016
+//
+#include <algorithm>
+#include <vector>
+
+extern void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int); // see implementation in HW_errDiffusion.cpp
+int getMedianWithK(std::vector<int>, int);
 void
 HW_median(ImagePtr I1, int sz, ImagePtr I2)
 {
