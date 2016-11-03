@@ -1,10 +1,4 @@
-#include <algorithm>
-#include <vector>
-#include <math.h>
-
 extern void copyRowToBuffer(ChannelPtr<uchar>, short*, int, int); // see implementation in HW_errDiffusion.cpp
-// int getSumWithKernel(std::vector<int>, ChannelPtr<float>);
-int getSumWithKernel(std::vector<int>, std::vector<float>);
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // HW_convolve:
@@ -25,22 +19,16 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
     int type;
     ChannelPtr<uchar> p1, p2, endd;
 
-    ChannelPtr<float> pKernel;
-    IP_getChannel(Ikernel, 0, pKernel, type);
-    std::vector<float> vKernel(0);
-    for (int i=0; i<sz; i++) {
-      for (int j=0; j<sz; j++) {
-        vKernel.push_back(pKernel[i+j*sz]);
-        // qDebug() << vKernel.back();
-      }
-    }
-
     if (sz == 1) {
         for(int ch = 0; IP_getChannel(I1, ch, p1, type); ch++) {
             IP_getChannel(I2, ch, p2, type);
             for(endd = p1 + total; p1<endd;) *p2++ = *p1++;
         }
     } else if (sz > 1) {
+
+        ChannelPtr<float> pKernel; // kernel value pointer
+        IP_getChannel(Ikernel, 0, pKernel, type);
+
         int bufSz = sz+w-1; // size of buffer for each padded row
         short* buffers[sz]; // array of sz pointers
         for (int i=0; i<sz; i++) buffers[i] = new short[bufSz];
@@ -55,50 +43,33 @@ HW_convolve(ImagePtr I1, ImagePtr Ikernel, ImagePtr I2)
             // continue to rest of buffers, note here we still begin copying from frist row of I1
             for (int i=sz/2; i<sz; i++) {
                 copyRowToBuffer(p1, buffers[i], w, sz);
-                p1+=w;
+                if (p1 < endd-w) p1+=w;
             }
 
-            std::vector<int> v(0);  // vector for storing neighbors
             for (int y=0; y<h; y++) {  // visit each row
-                for (int i=0; i<sz; i++) {  // visit each pixel value in neighborhood
-                    for (int j=0; j<sz; j++) {
-                        v.push_back(buffers[j][i]); // * storing column by column from buffers
-                    }
-                }
-
                 // visit each pixel in row
                 for (int x=0; x<w; x++) {
-                    *p2++ = CLIP(getSumWithKernel(v, vKernel), 0, 255);
-                    if (x<w-1) {
-                        v.erase(v.begin(), v.begin()+sz);  // delete outgoing column
-                        for (int i=0; i<sz; i++) v.push_back(buffers[i][x+sz]);  // add incoming column
+                    float sum = 0.0;
+                    for (int i=0; i<sz; i++) {
+                        for (int j=0; j<sz; j++) {
+                          sum += (buffers[i][j+x] * *pKernel++);
+                        }
                     }
+                    pKernel -= sz*sz;
+                    *p2++ = (int)CLIP(sum, 0, 255);
                 }
-                v.clear(); // clear vector
 
                 // circular quque
-                for (int i = 1; i<sz; i++) buffers[i] = buffers[0];
-                copyRowToBuffer(p1, buffers[sz-1], w, sz);
+                // remove buffers[0] and push all other buffers up by one index
+                for (int i = 0; i<sz-1; i++) {
+                  for (int j = 0; j<bufSz; j++) {
+                    buffers[i][j] = buffers[i+1][j];
+                  }
+                }
+                // copy next row to last buffer
+                copyRowToBuffer(p1, buffers[sz-1], w, sz); // copy new row to the last buffer
                 if (p1 < endd-w) p1+=w;
             }
         }
     }
-}
-
-
-// int
-// getSumWithKernel(std::vector<int> v, ChannelPtr<float> pKernel) {
-//     int vSz = v.size();
-//     float sum = 0.0;
-//     for (int i=0; i<vSz; i++) {
-//         sum += (v[i] * pKernel[i]);
-//     }
-//     return sum;
-// }
-int
-getSumWithKernel(std::vector<int> v, std::vector<float> k) {
-    int vSz = v.size();
-    float sum = 0.0;
-    for (int i=0; i<vSz; i++) sum += (v[i] * k[i]);
-    return sum;
 }
