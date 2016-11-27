@@ -1,0 +1,65 @@
+1.
+	a. Consider a list L of six real numbers: 10, 40, 20, 90, 5, 30. Compute the six complex Fourier coefficients for list L. Note that N = 6 in this case. Show all hand calculations.
+
+	Fn = 1/N * ∑ k=0 to N-1, fk * e ^ ((-i * 2𝛑 * n * k) / N)
+
+	A = 1, B = 1/2 - i*(√(3)/2), C = -1/2 - i*(√(3)/2), D = -1, E = -1/2 + i*(√(3)/2), F = 1/2 + i*(√(3)/2)
+
+	F0 = 5/3 + 20/3 + 10/3 + 15 + 5/6 + 5 = 195/6
+
+	F1 = (5/3)e^0 + (20/3)e^(-i*𝛑/3) + (10/3)e^(-2i*𝛑/3) + 15e^(-i*𝛑) + (5/6)e^(-4i*𝛑/3) + 5e^(-5i*𝛑/3)
+	   = (5/3)A + (20/3)B + (10/3)C + 15D + (5/6)E + 5F
+	   = -115/12 - i*(25*√(3)/12)
+
+	F2 = (5/3)e^0 + (20/3)e^(-2i*𝛑/3) + (10/3)e^(-4i*𝛑/3) + 15e^(-2i*𝛑) + (5/6)e^(-8i*𝛑/3) + 5e^(-10i*𝛑/3)
+	   = (5/3)A + (20/3)C + (10/3)E + 15A + (5/6)C + 5E
+	   = 105/12 + i*(5*√(3)/12)
+
+	F3 = (5/3)e^0 + (20/3)e^(-i*𝛑) + (10/3)e^(-2i*𝛑) + 15e^(-3i*𝛑) + (5/6)e^(-4i*𝛑) + 5e^(-5i*𝛑)
+	   = (5/3)A + (20/3)D + (10/3)A + 15D + (5/6)A + 5D
+	   = -125/6
+
+	F4 =(5/3)e^0 + (20/3)e^(-4i*𝛑/3) + (10/3)e^(-8i*𝛑/3) + 15e^(-4i*𝛑) + (5/6)e^(-16i*𝛑/3) + 5e^(-20i*𝛑/3)
+	   = (5/3)A + (20/3)E + (10/3)C + 15A + (5/6)E + 5C
+	   = 105/12 - i*(5*√(3)/12)
+
+	F5 = (5/3)e^0 + (20/3)e^(-5i*𝛑/3) + (10/3)e^(-10i*𝛑/3) + 15e^(-5i*𝛑) + (5/6)e^(-20i*𝛑/3) + 5e^(-25i*𝛑/3)
+	   = (5/3)A + (20/3)F + (10/3)E + 15D + (5/6)C + 5B
+	   = -115/12 + i*(25*√(3)/12)
+
+	b. Explain why the maximum frequency n cannot exceed 3 cycles per scanline, i.e., N/2 cycles per scanline.
+
+	As the result shown in part (a), F4 is the complex conjugate of F2, F5 is the complex conjugate of F1; we see when n exceed 3, everything start repeating since the radian of Fn is n𝛑/3, and that means any n greater 3 or less 0, the value will repeat.
+
+
+
+	c. Show that the result of Eq.(1) using n = 0, 1, 2, 3, 4, 5 are identical to those using n = -2, -1, 0, 1, 2, 3. Note that the latter set of frequencies n conforms with the maximum limit to frequency n, i.e., 3 cycles per scanline.
+
+	F-2 = (5/3)e^0 + (20/3)e^(2i*𝛑/3) + (10/3)e^(4i*𝛑/3) + 15e^(2i*𝛑) + (5/6)e^(8i*𝛑/3) + 5e^(10i*𝛑/3)
+		= (5/3)A + (20/3)E + (10/3)C + 15A + (5/6)E + 5C
+		= 105/12 - i*(5*√(3)/12)
+
+	F-1 = (5/3)e^0 + (20/3)e^(i*𝛑/3) + (10/3)e^(2i*𝛑/3) + 15e^(i*𝛑) + (5/6)e^(4i*𝛑/3) + 5e^(5i*𝛑/3)
+		= (5/3)A + (20/3)F + (10/3)E + 15D + (5/6)C + 5B
+		= -115/12 + i*(25*√(3)/12)
+
+	F0 = 5/3 + 20/3 + 10/3 + 15 + 5/6 + 5 = 195/6
+
+	F1 = (5/3)e^0 + (20/3)e^(-i*𝛑/3) + (10/3)e^(-2i*𝛑/3) + 15e^(-i*𝛑) + (5/6)e^(-4i*𝛑/3) + 5e^(-5i*𝛑/3)
+	   = (5/3)A + (20/3)B + (10/3)C + 15D + (5/6)E + 5F
+	   = -115/12 - i*(25*√(3)/12)
+
+	F2 = (5/3)e^0 + (20/3)e^(-2i*𝛑/3) + (10/3)e^(-4i*𝛑/3) + 15e^(-2i*𝛑) + (5/6)e^(-8i*𝛑/3) + 5e^(-10i*𝛑/3)
+	   = (5/3)A + (20/3)C + (10/3)E + 15A + (5/6)C + 5E
+	   = 105/12 + i*(5*√(3)/12)
+
+	F3 = (5/3)e^0 + (20/3)e^(-i*𝛑) + (10/3)e^(-2i*𝛑) + 15e^(-3i*𝛑) + (5/6)e^(-4i*𝛑) + 5e^(-5i*𝛑)
+	   = (5/3)A + (20/3)D + (10/3)A + 15D + (5/6)A + 5D
+	   = -125/6
+
+	As the calculation shown above, for both situations, n = 0, 1, 2, 3 will have same value, also we see F-2 = F4, F-1 = F5, and it is because the radian of Fn is n𝛑/3, -𝛑/3 = 5𝛑/3 and -2𝛑/3 = 4𝛑/3. Therefore, using n = 0, 1, 2, 3, 4, 5 is identical
+
+
+	
+	
+	
